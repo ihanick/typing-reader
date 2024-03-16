@@ -1,0 +1,32 @@
+#!/bin/bash
+PAGE_SIZE=400
+
+if test "$#" -lt 1 ; then
+  echo "Usage: $0 <file to read> [page number, $PAGE_SIZE characters per page]"
+  exit 1
+fi
+
+PAGE=$2
+test "x$PAGE" = x && PAGE=1
+FILE=$( mktemp )
+TOTAL_CHARS=$(sed -e 's/\t/  /g' $1 | wc -c)
+TOTAL_PAGES=$(( ($TOTAL_CHARS + $PAGE_SIZE - 1) / $PAGE_SIZE ))
+
+if test $PAGE -gt $TOTAL_PAGES ; then
+  echo "You are done with $1"
+  exit 0
+fi
+
+if test $PAGE -eq $TOTAL_PAGES -a $TOTAL_PAGES -gt 0 ; then
+  PREV_PAGE=$(( $PAGE - 1 ))
+  sed -e 's/\t/  /g' $1 2>/dev/null | tail -c $(($TOTAL_CHARS - $PAGE_SIZE*$PREV_PAGE)) > $FILE
+else
+  sed -e 's/\t/  /g' $1 2>/dev/null | head -c $(($PAGE_SIZE*$PAGE)) | tail -c $PAGE_SIZE > $FILE
+fi
+CHARS=$( wc -c < $FILE)
+TSTART=$(date '+%s')
+typing-reader $FILE
+TEND=$(date '+%s')
+CPM=$( echo "60 * $CHARS / ( $TEND - $TSTART ) " | bc -l)
+printf "Speed: %0.2f cpm\n" $CPM
+rm -f $FILE

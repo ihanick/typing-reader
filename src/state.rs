@@ -88,7 +88,7 @@ impl State {
             .take(to_include)
             .map(|line| {
                 Spans::from(Span::styled(
-                    line,
+                    format!("{} {}", ' ', line),
                     Style::default().add_modifier(Modifier::DIM),
                 ))
             })
@@ -100,7 +100,7 @@ impl State {
             .iter()
             .skip(self.typing.line_idx + 1)
             .take(self.text_height as usize)
-            .map(|line| Spans::from(Span::raw(line)))
+            .map(|line| Spans::from(Span::raw(format!("{} {}", ' ', line))))
     }
 
     /// Split current line into 4 String parts:
@@ -110,7 +110,7 @@ impl State {
     /// 4. extra line break symbol if cursor is not at the end of the line
     fn split_current_line(&self) -> (String, String, String, String) {
         let mut line = self.typing.current_line_chars();
-        let before = String::from_iter(line.by_ref().take(self.typing.char_idx));
+        let before = format!("{} {}", ' ', String::from_iter(line.by_ref().take(self.typing.char_idx)));
         let remaining = String::from_iter(line.by_ref());
         let cursor: String;
         let after: String;
